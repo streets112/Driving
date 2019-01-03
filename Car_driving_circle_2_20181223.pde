@@ -21,9 +21,12 @@ void setup() {
 
 void draw() {
   frameRate(30);
-  print(degrees(mycar.wheelAngle), "\n");
+  //print(degrees(mycar.wheelAngle), "\n");
   courseUpdate(); 
   mycar.update();
+  mycar.drawCar();
+  mycar.calcNextFrame();
+  //mycar.update();
   
   
 }
