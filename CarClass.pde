@@ -1,32 +1,47 @@
-//<>// //<>// //<>// //<>// //<>// //<>// //<>//
+class Car { //<>// //<>// //<>// //<>// //<>// //<>// //<>//
 
 
-class Car {
 
-  // gross car dimensions
-  float carWidth =10;
-  float carHeight = 60;
-  float carCornerAngle = atan(carWidth/carHeight);
-  float carCornerDist = pythag(carWidth/2, carHeight/2);
-  int maxWheelAngle = 90;
-  float wheelTurn = 5;
+  // important car parameters
+  // turning information
+  float XcenRot;
+  float YcenRot;
+  float RtoRightWheel;
+  float RtoLeftWheel;
+  float Rmag;
+  float carAngle = 0;
 
-  // car color
-  color c;
+  // cartesian parameters
+  float XposRel;
+  float YposRel;
+  float Xpos;
+  float Ypos;
 
-  // location of center of car
-  float posx;
-  float posy;
 
-  // straight line velocity of car
-  float speed;
+  // wheel parameters
+  float LwheelAngle = 0;
+  float RwheelAngle = 0;
+  int maxWheelAngle = 89;
+  float wheelTurn = 2;
+  float speed = 1;
 
-  // angle at which car is travelling relative to global
-  float angle=1;
-  float fr_posx, fr_posy, rr_posx, rr_posy, rl_posx, rl_posy, fl_posx, fl_posy;
 
-  // angle at which the wheels will influence the car angle at next position
-  float wheelAngle = 0;
+  // car physical parameters
+  float carLength =100;
+  float carWidth =100;
+  float carCenterToCornerAngle = atan((carWidth/2)/carLength);
+  float carCenterToCornerDist = pythag(carWidth/2, carLength);
+
+
+
+  float carCornerDist = pythag(carWidth/2, carLength/2);
+
+  // car extents
+  float fr_Xpos, fr_Ypos, rr_Xpos, rr_Ypos, rl_Xpos, rl_Ypos, fl_Xpos, fl_Ypos;
+
+
+  // relative direction of car -1 left, 0 straight, 1 right turn
+  int Gdirect = 0;
 
   // flags for turning criteria
   boolean turnLeft = false;
@@ -39,91 +54,50 @@ class Car {
   // flag for reset
   boolean crashed = false;
 
-  // global position of center of rotation for turning
-  float xCoord, yCoord;
-
-  // location of center of car to center of rotation of car relative to car
-  float distanceToRotation;
-  float angleToRotation;
-  float angle_CarAlongCoR;
-
-  // debug messages
-  float message1, message2;
-
 
   Car() {
-    c = color(255, 0, 0);
-    posx = width/2-200;
-    posy = height/2 ;
-    speed = 1;
-    angle = 0;
+    Xpos = width/2 + 130;
+    Ypos = height/2 + 160;
+
+    speed = 0;
+    carAngle = PI/6;
   }
 
 
-
-  void displayCar() {
-    stroke(0);
-    fill(c);
-    rectMode(CENTER);
-
-
-    pushMatrix();
-    translate(posx, posy);
-    rotate(angle);
-    rect(0, 0, carHeight, carWidth);
-    popMatrix();
-
-    carExtents();
+  float otherWheelAngle(float CurrentWheelAngle) {
+    float A = carLength/tan(CurrentWheelAngle);
+    float B = A+carWidth;
+    return atan( carLength/ B ) ;
   }
-
-  void carExtents() {
-
-    // position of front right corner
-    fr_posx = posx+carCornerDist*cos(angle+carCornerAngle);
-    fr_posy = posy+carCornerDist*sin(angle+carCornerAngle);
-
-    // position of rear right corner
-    rr_posx = posx+carCornerDist*cos(PI+angle-carCornerAngle);
-    rr_posy = posy+carCornerDist*sin(PI+angle-carCornerAngle);
-    // position of rear left corner
-    rl_posx = posx+carCornerDist*cos(PI+angle+carCornerAngle);
-    rl_posy = posy+carCornerDist*sin(PI+angle+carCornerAngle);
-
-
-    // position of front left corner
-    fl_posx = posx+carCornerDist*cos(angle-carCornerAngle);
-    fl_posy = posy+carCornerDist*sin(angle-carCornerAngle);
-    strokeWeight(2);
-    stroke(255, 0, 0);
-    ellipse(mycar.fr_posx, mycar.fr_posy, 3, 3);
-    stroke(255, 255, 0);
-    ellipse(mycar.fl_posx, mycar.fl_posy, 3, 3);
-    stroke(255, 0, 255);
-    ellipse(mycar.rr_posx, mycar.rr_posy, 3, 3);
-    stroke(0, 0, 0);
-    ellipse(mycar.rl_posx, mycar.rl_posy, 3, 3);
-  }
-
-  float pythag(float a, float b) {
-    return sqrt(pow(a, 2)+pow(b, 2));
-  }
-
 
 
   void update() {
     if (!crashed) {
+      carCenterToCornerAngle = atan((carWidth/2)/carLength);
+      carCenterToCornerDist = pythag(carWidth/2, carLength);
+
+
+
+      carCornerDist = pythag(carWidth/2, carLength/2);
+
       if (turnLeft) {
-        if (wheelAngle>=radians(-maxWheelAngle+degrees(atan2(carWidth, carHeight)))+radians(wheelTurn)) {
-          wheelAngle+=radians(-wheelTurn);
+
+        if (LwheelAngle>=radians(-maxWheelAngle)+radians(wheelTurn)) {
+
+          LwheelAngle+=radians(-wheelTurn);
+
+          RwheelAngle= -otherWheelAngle(-LwheelAngle);
         } else {
-          wheelAngle = radians(-maxWheelAngle+degrees(atan2(carWidth, carHeight)));
+          LwheelAngle = radians(-maxWheelAngle);
         }
       }
       if (turnRight) {
-        if (wheelAngle<=radians(maxWheelAngle)-radians(wheelTurn)) {
-          wheelAngle+=radians(wheelTurn);
+        if (RwheelAngle<=radians(maxWheelAngle)-radians(wheelTurn)) {
+
+          RwheelAngle+=radians(wheelTurn);
+          LwheelAngle= otherWheelAngle(RwheelAngle);
         } else {
-          wheelAngle = radians(maxWheelAngle);
+          RwheelAngle = radians(maxWheelAngle);
         }
       }
       if (accel) {
@@ -137,107 +111,171 @@ class Car {
           speed = -5;
         }
       }
+
+      Gdirect = LeftRightStraight();
       centerOfRotation();
     }
   }
 
-  void centerOfRotation() {
 
-    if (abs(wheelAngle)<radians(3)) {
-      distanceToRotation = 0;
-      driveStraight();
-      return;
+
+
+
+
+
+  float pythag(float a, float b) {
+    // performs pythag on 2 numbers to get hypotenuse
+    return sqrt(pow(a, 2)+pow(b, 2));
+  }
+
+  int LeftRightStraight() {
+    // this function tells if you are going turning left -1, right 1, or straight 0
+    if (LwheelAngle<radians(-3)) {
+      Rmag = abs(carLength * 1/tan(LwheelAngle));  // distance to wheel only, not center of car
+
+      return -1;
+    } else if (RwheelAngle>radians(3)) {
+      Rmag = carLength * 1/tan(RwheelAngle);
+
+      return 1;
+    } else { 
+      Rmag = 0;
+      return 0;
     }
+  }
 
-    distanceToRotation = pythag(carWidth/2 + carHeight * 1/tan(wheelAngle), carHeight/2);
-    angleToRotation = atan2(carWidth/2 + carHeight * 1/tan(wheelAngle), carHeight/2);
-
-
-    yCoord = posy + distanceToRotation*sin(PI-angleToRotation+angle);
-    xCoord = posx + distanceToRotation*cos(PI-angleToRotation+angle);
-    fill(0, 0, 0, 0);
-    strokeWeight(1);
-
-    ellipse(xCoord, yCoord, carHeight * 2/tan(wheelAngle), carHeight * 2/tan(wheelAngle));
-    ellipse(xCoord, yCoord, carHeight * 2/tan(wheelAngle)+2*carWidth, carHeight * 2/tan(wheelAngle)+2*carWidth);
-    stroke(0);    
-    ellipse(xCoord, yCoord, 2*pythag(carHeight * 1/tan(wheelAngle), carHeight), 2*pythag(carHeight * 1/tan(wheelAngle), carHeight) );
-    stroke(0);    
-    ellipse(xCoord, yCoord, distanceToRotation*2, distanceToRotation*2);
-    lineAngle(fr_posx, fr_posy, -wheelAngle-angle, 30);
-    //  print(xCoord, "\t", yCoord);
-    driveAlongArc();
+  void centerOfRotation() {
+    // find where the point of rotation is on the global frame
+    if (Gdirect==-1) {
+      XcenRot = Xpos + (Rmag+carWidth/2)*cos(carAngle);
+      YcenRot = Ypos + (Rmag+carWidth/2)*sin(carAngle);
+    } else if (Gdirect==1) {
+      XcenRot = Xpos - (Rmag+carWidth/2)*cos(carAngle);
+      YcenRot = Ypos - (Rmag+carWidth/2)*sin(carAngle);
+    } else {
+      XcenRot = 9999999;
+      YcenRot = 9999999;
+    }
   }
 
 
 
-  void driveAlongArc() {
+  void drawCar() {
 
-    // just use straight line speed if wheel angle small
-    if (distanceToRotation==0) {
+    stroke(0);
+    strokeWeight(.5);
+    noFill();  
+    rectMode(CENTER);
 
+    fill(127);
+    // if the car is turning
+    if (Gdirect!=0) {
+      fill(127);
+      pushMatrix();
+      translate(XcenRot, YcenRot);
+      rotate(carAngle);
 
-      posx += speed*cos(angle);
-      posy += speed*sin(angle);
+      if (Gdirect==-1) {
+        rectMode(CENTER);
+        rect(-Rmag-carWidth/2, carLength/2, carWidth, carLength);
+        popMatrix();
+        noFill();
+        ellipse(XcenRot, YcenRot, Rmag*2, Rmag*2);
+        text(Rmag, XcenRot, YcenRot);
+        ellipse(XcenRot, YcenRot, pythag(XcenRot-fr_Xpos, YcenRot-fr_Ypos)*2, pythag(XcenRot-fr_Xpos, YcenRot-fr_Ypos)*2);
+        ellipse(XcenRot, YcenRot, pythag(XcenRot-fl_Xpos, YcenRot-fl_Ypos)*2, pythag(XcenRot-fl_Xpos, YcenRot-fl_Ypos)*2);
+        point(XcenRot, YcenRot);
+      }
+      if (Gdirect==1) {
+        rectMode(CENTER);
+        rect(Rmag+carWidth/2, carLength/2, carWidth, carLength);
+        popMatrix();
+        noFill();
+        ellipse(XcenRot, YcenRot, (Rmag)*2, (Rmag)*2);
+        text(Rmag, XcenRot, YcenRot);
+        ellipse(XcenRot, YcenRot, pythag(XcenRot-fr_Xpos, YcenRot-fr_Ypos)*2, pythag(XcenRot-fr_Xpos, YcenRot-fr_Ypos)*2);
+        ellipse(XcenRot, YcenRot, pythag(XcenRot-fl_Xpos, YcenRot-fl_Ypos)*2, pythag(XcenRot-fl_Xpos, YcenRot-fl_Ypos)*2);
+        point(XcenRot, YcenRot);
+      }
     } else {
+      // the car is traveling straight, simplifying the transformations
+      pushMatrix();
+      translate(Xpos, Ypos);
+      rotate(carAngle);
 
-      angle_CarAlongCoR = speed/distanceToRotation;
-      // move reference point to center of rotation
+      rect(0, carLength/2, carWidth, carLength);
+      popMatrix();
+    }
+
+    // draw a direction indicator
+    strokeWeight(1);
+    stroke(0);
+    pushMatrix();
+    translate(Xpos, Ypos);
+    rotate(carAngle+HALF_PI);
+    line(carLength, 0, carLength+30, 0);
+    popMatrix();
 
 
-      // using speed as arc length, and center of rotation as center of rotation, distanceToRotation as radius
-      // get relative difference of just the effect of turning
+    textSize(20);
+    float boogy = Xpos-XcenRot;
+    String message1 = Xpos + "\n" + Ypos;
+    String message2 = Gdirect + "\n" + degrees(carAngle%TWO_PI) + "\nLeft" + degrees(LwheelAngle)+"\nRight" + degrees(RwheelAngle) + "\n" + Xpos + "\n" + Ypos + "\n" + boogy + "\n" + YcenRot;
+    text(message2, Xpos+5, Ypos+20);
+    text(message2, 5, 20);
+  }
 
-      //float nonArcTravel = 2*distanceToRotation*sin(angle_CarAlongCoR/2);
 
 
-      //posx += nonArcTravel*cos(angle+angle_CarAlongCoR);
-      //posy += nonArcTravel*sin(angle+angle_CarAlongCoR);
 
+  void calcNextFrame() {
+    // if going straight
+    if (Gdirect==0) {
+      Xpos -= speed * sin(carAngle);
+      Ypos += speed * cos(carAngle);
 
-print("bugga boo\n");
-      if (wheelAngle>radians(3)) {
-        float angleInCircle = atan2(posx-xCoord,posy-yCoord);
-        print("xCoord", xCoord, "yCoord", yCoord, degrees(angleInCircle), "angl"); //<>//
-        print("\t", posx, "\t");
-        posx = xCoord + distanceToRotation * cos(angleInCircle + angle_CarAlongCoR);
-        posy = yCoord + distanceToRotation * sin(angleInCircle + angle_CarAlongCoR);
-        print(posx); //<>//
-        
-        angle += angle_CarAlongCoR;
-        // update car to new angle caused by turn
-      } else if (wheelAngle<0) {
-        angle -= angle_CarAlongCoR;
-        // update car to new angle caused by turn
+      // use turning algorithm
+    } else {
+      float angleCarAlongArc = speed/Rmag;
+      if (Gdirect==-1) {
+        carAngle-=angleCarAlongArc;
+        Xpos = XcenRot - (Rmag+carWidth/2)*cos(carAngle);
+        Ypos = YcenRot - (Rmag+carWidth/2)*sin(carAngle);
+      } else {
+        carAngle += angleCarAlongArc;
+        Xpos = XcenRot + (Rmag+carWidth/2)*cos(carAngle);
+        Ypos = YcenRot + (Rmag+carWidth/2)*sin(carAngle);
       }
     }
-    ellipse(xCoord, yCoord, 5, 5);
-    displayCar();
-    strokeWeight(1);
-    stroke(0);
-    pushMatrix();
-    translate(posx, posy);
-    rotate(angle);
-    line(carHeight, 0, carHeight+30, 0);
-    popMatrix();
-  }
-
-  void driveStraight() {
-    posx = posx+speed*cos(angle);
-    posy = posy+speed*sin(angle);
-    displayCar();
-    strokeWeight(1);
-    stroke(0);
-    pushMatrix();
-    translate(posx, posy);
-    rotate(angle);
-    line(carHeight, 0, carHeight+30, 0);
-    popMatrix();
   }
 
 
-  void lineAngle(float x, float y, float angle, float length)
-  {
-    line(x, y, x+cos(angle)*length, y-sin(angle)*length);
+  void carExtents() {
+
+    // position of front right corner
+    fr_Xpos = Xpos-carCenterToCornerDist*cos(carAngle-HALF_PI+carCenterToCornerAngle);
+    fr_Ypos = Ypos-carCenterToCornerDist*sin(carAngle-HALF_PI+carCenterToCornerAngle);
+
+    // position of rear right corner
+    rr_Xpos = Xpos+0.5*carWidth*cos(PI+carAngle);
+    rr_Ypos = Ypos+0.5*carWidth*sin(PI+carAngle);
+    // position of rear left corner
+    rl_Xpos = Xpos-0.5*carWidth*cos(PI+carAngle);
+    rl_Ypos = Ypos-0.5*carWidth*sin(PI+carAngle);
+
+
+    // position of front left corner
+    fl_Xpos = Xpos+carCenterToCornerDist*cos(carAngle+HALF_PI-carCenterToCornerAngle);
+    fl_Ypos = Ypos+carCenterToCornerDist*sin(carAngle+HALF_PI-carCenterToCornerAngle);
+
+    strokeWeight(2);
+    stroke(255, 0, 0);
+    ellipse(mycar.fr_Xpos, mycar.fr_Ypos, 3, 3);
+    stroke(125, 125, 0);
+    ellipse(mycar.fl_Xpos, mycar.fl_Ypos, 3, 3);
+    stroke(255, 0, 255);
+    ellipse(mycar.rr_Xpos, mycar.rr_Ypos, 3, 3);
+    stroke(0, 0, 0);
+    ellipse(mycar.rl_Xpos, mycar.rl_Ypos, 3, 3);
   }
 }
