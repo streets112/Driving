@@ -81,7 +81,6 @@ class Car { //<>// //<>// //<>// //<>// //<>// //<>// //<>//
       carCornerDist = pythag(carWidth/2, carLength/2);
 
       if (turnLeft) {
-
         if (LwheelAngle>=radians(-maxWheelAngle)+radians(wheelTurn)) {
 
           LwheelAngle+=radians(-wheelTurn);
@@ -116,11 +115,6 @@ class Car { //<>// //<>// //<>// //<>// //<>// //<>// //<>//
       centerOfRotation();
     }
   }
-
-
-
-
-
 
 
   float pythag(float a, float b) {
@@ -277,5 +271,5 @@ class Car { //<>// //<>// //<>// //<>// //<>// //<>// //<>//
     ellipse(mycar.rr_Xpos, mycar.rr_Ypos, 3, 3);
     stroke(0, 0, 0);
     ellipse(mycar.rl_Xpos, mycar.rl_Ypos, 3, 3);
-  }
+
 }

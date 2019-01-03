@@ -24,7 +24,7 @@ void keyPressed() {
   if (key=='q' || key == 'Q'){
     mycar.carLength++;
   }
-    if (key=='a' || key == 'A'){
+  if (key=='a' || key == 'A'){
     mycar.carLength--;
   }
 }
@@ -32,7 +32,7 @@ void keyPressed() {
 void keyReleased() {
   if ((key==CODED)&&(keyCode == LEFT)) {
     mycar.turnLeft = false;
-  }
+}
   if ((key==CODED)&&(keyCode == RIGHT)) {
     mycar.turnRight = false;
   }
