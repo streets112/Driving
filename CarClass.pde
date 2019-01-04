@@ -21,14 +21,14 @@ class Car { //<>// //<>// //<>// //<>// //<>// //<>// //<>//
   // wheel parameters
   float LwheelAngle = 0;
   float RwheelAngle = 0;
-  int maxWheelAngle = 89;
+  int maxWheelAngle = 45; 
   float wheelTurn = 2;
   float speed = 1;
-
+  float straightAngle = 1;
 
   // car physical parameters
-  float carLength =100;
-  float carWidth =100;
+  float carLength =30;
+  float carWidth =15;
   float carCenterToCornerAngle = atan((carWidth/2)/carLength);
   float carCenterToCornerDist = pythag(carWidth/2, carLength);
 
@@ -99,16 +99,11 @@ class Car { //<>// //<>// //<>// //<>// //<>// //<>// //<>//
           RwheelAngle = radians(maxWheelAngle);
         }
       }
-      if (accel) {
+      if (accel && speed < 10) {
         speed+=.5;
       }
-      if (brake) {
-        if (speed>=-5) {
-          speed-=.5;
-        } else
-        {
-          speed = -5;
-        }
+      if (brake && speed > -5) {
+        speed-=.5;
       }
 
       Gdirect = LeftRightStraight();
@@ -124,11 +119,11 @@ class Car { //<>// //<>// //<>// //<>// //<>// //<>// //<>//
 
   int LeftRightStraight() {
     // this function tells if you are going turning left -1, right 1, or straight 0
-    if (LwheelAngle<radians(-3)) {
+    if (LwheelAngle<radians(-straightAngle)) {
       Rmag = abs(carLength * 1/tan(LwheelAngle));  // distance to wheel only, not center of car
 
       return -1;
-    } else if (RwheelAngle>radians(3)) {
+    } else if (RwheelAngle>radians(straightAngle)) {
       Rmag = carLength * 1/tan(RwheelAngle);
 
       return 1;
@@ -174,10 +169,9 @@ class Car { //<>// //<>// //<>// //<>// //<>// //<>// //<>//
         rect(-Rmag-carWidth/2, carLength/2, carWidth, carLength);
         popMatrix();
         noFill();
-        ellipse(XcenRot, YcenRot, Rmag*2, Rmag*2);
-        text(Rmag, XcenRot, YcenRot);
-        ellipse(XcenRot, YcenRot, pythag(XcenRot-fr_Xpos, YcenRot-fr_Ypos)*2, pythag(XcenRot-fr_Xpos, YcenRot-fr_Ypos)*2);
-        ellipse(XcenRot, YcenRot, pythag(XcenRot-fl_Xpos, YcenRot-fl_Ypos)*2, pythag(XcenRot-fl_Xpos, YcenRot-fl_Ypos)*2);
+        //ellipse(XcenRot, YcenRot, Rmag*2, Rmag*2);
+        //ellipse(XcenRot, YcenRot, pythag(XcenRot-fr_Xpos, YcenRot-fr_Ypos)*2, pythag(XcenRot-fr_Xpos, YcenRot-fr_Ypos)*2);
+        //ellipse(XcenRot, YcenRot, pythag(XcenRot-fl_Xpos, YcenRot-fl_Ypos)*2, pythag(XcenRot-fl_Xpos, YcenRot-fl_Ypos)*2);
         point(XcenRot, YcenRot);
       }
       if (Gdirect==1) {
@@ -185,10 +179,9 @@ class Car { //<>// //<>// //<>// //<>// //<>// //<>// //<>//
         rect(Rmag+carWidth/2, carLength/2, carWidth, carLength);
         popMatrix();
         noFill();
-        ellipse(XcenRot, YcenRot, (Rmag)*2, (Rmag)*2);
-        text(Rmag, XcenRot, YcenRot);
-        ellipse(XcenRot, YcenRot, pythag(XcenRot-fr_Xpos, YcenRot-fr_Ypos)*2, pythag(XcenRot-fr_Xpos, YcenRot-fr_Ypos)*2);
-        ellipse(XcenRot, YcenRot, pythag(XcenRot-fl_Xpos, YcenRot-fl_Ypos)*2, pythag(XcenRot-fl_Xpos, YcenRot-fl_Ypos)*2);
+        //ellipse(XcenRot, YcenRot, (Rmag)*2, (Rmag)*2);
+        //ellipse(XcenRot, YcenRot, pythag(XcenRot-fr_Xpos, YcenRot-fr_Ypos)*2, pythag(XcenRot-fr_Xpos, YcenRot-fr_Ypos)*2);
+        //ellipse(XcenRot, YcenRot, pythag(XcenRot-fl_Xpos, YcenRot-fl_Ypos)*2, pythag(XcenRot-fl_Xpos, YcenRot-fl_Ypos)*2);
         point(XcenRot, YcenRot);
       }
     } else {
@@ -215,8 +208,7 @@ class Car { //<>// //<>// //<>// //<>// //<>// //<>// //<>//
     float boogy = Xpos-XcenRot;
     String message1 = Xpos + "\n" + Ypos;
     String message2 = Gdirect + "\n" + degrees(carAngle%TWO_PI) + "\nLeft" + degrees(LwheelAngle)+"\nRight" + degrees(RwheelAngle) + "\n" + Xpos + "\n" + Ypos + "\n" + boogy + "\n" + YcenRot;
-    text(message2, Xpos+5, Ypos+20);
-    text(message2, 5, 20);
+    //text(message2, 5, 20);
   }
 
 
@@ -271,5 +263,5 @@ class Car { //<>// //<>// //<>// //<>// //<>// //<>// //<>//
     ellipse(mycar.rr_Xpos, mycar.rr_Ypos, 3, 3);
     stroke(0, 0, 0);
     ellipse(mycar.rl_Xpos, mycar.rl_Ypos, 3, 3);
-
+  }
 }
